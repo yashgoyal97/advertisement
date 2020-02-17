@@ -18,7 +18,9 @@ class AdvertisementApp extends PolymerElement {
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}"></app-route>     
     <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
       <view404-page name='view404'></view404-page>
+      <sales-page name='sales'></sales-page>
       <admin-page name='admin'></admin-page>
+      <admin-page name='admin' user-id={{userId}}></admin-page>
       <login-page name='login'></login-page>
     </iron-pages>
     `;
@@ -31,7 +33,11 @@ class AdvertisementApp extends PolymerElement {
         observer: '_pageChanged'
       },
       routeData: Object,
-      subroute: Object
+      subroute: Object,
+      userId: {
+        type: Number,
+        value: ""
+      }
     };
   }
 
@@ -48,7 +54,7 @@ class AdvertisementApp extends PolymerElement {
   _routePageChanged(page) {
     if (!page) {
       this.page = 'login';
-    } else if (['login', 'admin'].indexOf(page) !== -1) {
+    } else if (['login', 'admin', 'sales'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'view404';
@@ -57,6 +63,10 @@ class AdvertisementApp extends PolymerElement {
 
   ready() {
     super.ready();
+    this.addEventListener('refresh-admin', function (event) {
+      this.userId = event.detail.item;
+      console.log(this.userId);
+    })
   }
 
   /**
@@ -70,6 +80,9 @@ class AdvertisementApp extends PolymerElement {
         break;
       case 'admin':
         import('./admin-page.js');
+        break;
+      case 'sales':
+        import('./sales-page.js');
         break;
       case 'view404':
         import('./view404-page.js');

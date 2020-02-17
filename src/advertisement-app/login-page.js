@@ -14,54 +14,72 @@ class LoginPage extends PolymerElement {
         return html`
 
             <style>
+            .container{
+                display:grid;
+                grid-template-rows:80px auto;
+                grid-template-columns:1fr;
+                grid-template-areas:"header" "main" "footer";
+                grid-gap:2px;
+            }
+            header{
+                grid-area:header;
+                background-color:rgba(255,255,255,0.9);
+                color:black;
+                display:grid;
+                grid-template-rows:1fr;
+                grid-template-columns:1fr 1fr 1fr;
+                grid-template-areas:"empty logo";
+                padding:5px;
+            }
+            #logo{
+                grid-area: logo;
+            }
+            main{
+                grid-area:main;
+                display:grid;
+                grid-template-rows:1fr;
+                grid-template-columns:1fr 1fr 1fr;
+                grid-template-areas:"empty1 form";
+            }
             #toast0{
-                background-color:rgba(255,0,0,0.5);
+                background-color:red;
             }
             #loginForm{
-                margin: 100px auto;
-                width:40%;
-                background-color: white;
-                border: 2px ;
-                border-radius:15px;
+                margin-top:80px;
+                grid-area:form;
+                background-color: rgba(255,255,255,0.9);
+                border-radius:5px;
                 padding: 20px;
             }
             h1{
                 text-align: center;
+                margin:0px;
             }
             #loginButton{
                 background-color: rgba(0,50,255,0.6);
                 color: white;
-                margin-top: 10px;
-
+                margin-top: 20px;
             }
             #loginFields{
                 display: flex;
                 flex-direction: column;
             }
-            header{
-                margin: 0;
-                color:white;
-                width: 100%;
-                background-color: rgba(0,50,255,0.2);
-            }
-           
             </style>
             <app-location route="{{route}}"></app-location>
-            <div id="body">
-           <header>
-               <h1>Give2Hand</h1>
-           </header>
-                
+            <div id="container">
+                <header>
+                    <div id="logo"><h2>WideBroadcast<iron-icon icon="settings-input-antenna"></iron-icon></h2></div>
+                </header>
                 <main>
                     <iron-form id='loginForm'>
                         <form>
                             <div id='loginFields'>
                                 <h1>Login</h1>
-                                <paper-input id='username' name='username' label='Enter Phone No' allowed-pattern="[0-9]" maxlength="10" minlength="10" required ><iron-icon icon='perm-identity' slot='suffix'></iron-icon></paper-input>
+                                <paper-input id='username' name='username' label='Enter Phone No' allowed-pattern="[0-9]" maxlength="10" minlength="10" required><iron-icon icon='perm-identity' slot='suffix'></iron-icon></paper-input>
                                 <paper-input id='password' name='password' label='Enter Password' type='password' required ><iron-icon icon='lock' slot='suffix'></iron-icon></paper-input>
                                 <paper-button name='loginButton' id='loginButton' on-click='_handleLogin' raised>Login</paper-button>                
-                        </div>
-                            </form>
+                            </div>
+                        </form>
                     </iron-form>
                 </main>
             </div>
@@ -97,9 +115,8 @@ class LoginPage extends PolymerElement {
     _handleLogin() {
         if (this.$.loginForm.validate()) {
             let loginPostObj = { phoneNumber: parseInt(this.$.username.value), password: this.$.password.value };
-            this.$.loginForm.reset();
             this.action = 'list';
-            this._makeAjax(`http://10.117.189.181:9090/givetohand/login`, 'post', loginPostObj);
+            this._makeAjax(`${gBaseUrl}/widebroadcast/login`, 'post', loginPostObj);
         }
     }
 
@@ -117,11 +134,20 @@ class LoginPage extends PolymerElement {
                  * if the successful response is returned
                  */
                 if (this.loggedInUser.statusCode === 200) {
-                    sessionStorage.setItem('userId', this.loggedInUser.userId);
-                    sessionStorage.setItem('userName', this.loggedInUser.name);
-                    this.dispatchEvent(new CustomEvent('refresh-admin', { detail: {}, bubbles: true, composed: true }));
-                    window.history.pushState({}, null, '#/admin');
-                    window.dispatchEvent(new CustomEvent('location-changed'));
+                    let userId = this.loggedInUser.userId;
+                    sessionStorage.setItem('userId', userId);
+                    if (this.loggedInUser.role === "ADMIN") {
+                        console.log(this.loggedInUser.role);
+                        this.dispatchEvent(new CustomEvent('refresh-admin', { detail: { item: userId }, bubbles: true, composed: true }));
+                        // window.history.pushState({}, null, '#/admin');
+                        // window.dispatchEvent(new CustomEvent('location-changed'));
+                    }
+                    if (this.loggedInUser.role === "SALESMANAGER") {
+                        console.log(this.loggedInUser.role);
+                        this.dispatchEvent(new CustomEvent('refresh-sales', { detail: { item: userId }, bubbles: true, composed: true }));
+                        // window.history.pushState({}, null, '#/sales');
+                        // window.dispatchEvent(new CustomEvent('location-changed'));
+                    }
                 }
 
                 /**
