@@ -18,6 +18,7 @@ class AdvertisementApp extends PolymerElement {
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}"></app-route>     
     <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
       <view404-page name='view404'></view404-page>
+      <admin-page name='admin'></admin-page>
       <login-page name='login'></login-page>
     </iron-pages>
     `;
@@ -47,7 +48,7 @@ class AdvertisementApp extends PolymerElement {
   _routePageChanged(page) {
     if (!page) {
       this.page = 'login';
-    } else if (['login'].indexOf(page) !== -1) {
+    } else if (['login', 'admin'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'view404';
@@ -66,6 +67,9 @@ class AdvertisementApp extends PolymerElement {
     switch (page) {
       case 'login':
         import('./login-page.js');
+        break;
+      case 'admin':
+        import('./admin-page.js');
         break;
       case 'view404':
         import('./view404-page.js');
